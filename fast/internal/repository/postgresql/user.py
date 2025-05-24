@@ -8,6 +8,6 @@ class UserRepository:
     async def add_user(self, user: model.AddUser):
         try:
             async with self.pool.acquire() as conn:
-                pass
+                return "test"
         except Exception as e:
             logger.error(f'[add_user error]: {e}')

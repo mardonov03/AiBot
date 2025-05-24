@@ -9,6 +9,6 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
     class Config:
-        env_file = ".env"
+        env_file = "fast/.env"
 
 settings = Settings()

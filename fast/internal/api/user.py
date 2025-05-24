@@ -4,6 +4,6 @@ from fast.internal.models import user as model
 
 router = APIRouter()
 
-@router.post("add-to-db")
+@router.post("/add-to-db")
 async def add_user(user: model.AddUser):
-    pass
+    return {"name": "all good"}

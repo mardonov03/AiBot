@@ -23,18 +23,3 @@ class UserRepository:
                 return model.InfoUser(**dict(row))
         except Exception as e:
             logger.error(f'[get_user_data error]: {e}')
-
-    async def get_agreement_mesid(self, userid: int):
-        try:
-            async with self.pool.acquire() as conn:
-                mesid = await conn.fetchval("SELECT mesid FORM user_agreement WHERE userid = $1", userid)
-                return mesid
-        except Exception as e:
-            logger.error(f'[get_agreement_mesid error]: {e}')
-
-    async def update_agreement_mesid(self, form: model.UpdateAgreementMesid):
-        try:
-            async with self.pool.acquire() as conn:
-                await conn.execute("UPDATE user_agreement SET mesid = $1 WHERE userid = $2", form.mesid, form.userid)
-        except Exception as e:
-            logger.error(f'[add_user error]: {e}')

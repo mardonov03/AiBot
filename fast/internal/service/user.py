@@ -32,17 +32,3 @@ class UserService:
         except Exception as e:
             logger.error(f'[get_user_data error]: {e}')
 
-
-    async def get_agreement_mesid(self, userid: int):
-        try:
-            return await self.psql_repo.get_agreement_mesid(userid)
-        except Exception as e:
-            logger.error(f'[get_agreement_mesid error]: {e}')
-
-
-    async def update_agreement_mesid(self, form: model.UpdateAgreementMesid):
-        try:
-            return await self.psql_repo.update_agreement_mesid(form)
-        except Exception as e:
-            logger.error(f'[update_agreement_mesid error]: {e}')
-

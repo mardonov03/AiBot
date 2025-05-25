@@ -16,7 +16,3 @@ class InfoUser(BaseModel):
     username: str | None = None
     added_time: datetime
     agreement_status: bool
-
-class UpdateAgreementMesid(BaseModel):
-    userid: int
-    mesid: int

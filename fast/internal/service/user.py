@@ -9,8 +9,40 @@ class UserService:
         self.psql_repo = UserRepository(pool)
         self.redis_repo = RedisUserRepository(redis_pool)
 
-    async def add_user(self, user: model.AddUser):
+    async def init_or_deny(self, user: model.AddUser):
         try:
-            return await self.psql_repo.add_user(user)
+            existing = await self.psql_repo.get_user_data(user.userid)
+
+            if not existing:
+                await self.psql_repo.add_user(user)
+                return {"status": "need_agreement"}
+
+            if not existing.agreement_status:
+                return {"status": "need_agreement"}
+
+            return {"status": "ok"}
+
         except Exception as e:
-            logger.error(f'[add_user error]: {e}')
+            logger.error(f'[init_or_deny error]: {e}')
+            return {"status": "error"}
+
+    async def get_user_data(self, userid: int):
+        try:
+            return await self.psql_repo.get_user_data(userid)
+        except Exception as e:
+            logger.error(f'[get_user_data error]: {e}')
+
+
+    async def get_agreement_mesid(self, userid: int):
+        try:
+            return await self.psql_repo.get_agreement_mesid(userid)
+        except Exception as e:
+            logger.error(f'[get_agreement_mesid error]: {e}')
+
+
+    async def update_agreement_mesid(self, form: model.UpdateAgreementMesid):
+        try:
+            return await self.psql_repo.update_agreement_mesid(form)
+        except Exception as e:
+            logger.error(f'[update_agreement_mesid error]: {e}')
+

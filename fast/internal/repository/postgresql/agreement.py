@@ -20,4 +20,12 @@ class AgreementRepository:
             async with self.pool.acquire() as conn:
                 await conn.execute("UPDATE user_agreement SET mesid = $1 WHERE userid = $2", form.mesid, form.userid)
         except Exception as e:
-            logger.error(f'[add_user repo error]: {e}')
+            logger.error(f'[update_agreement_mesid repo error]: {e}')
+
+
+    async def update_agreement(self, form: model.UpdateAgreement):
+        try:
+            async with self.pool.acquire() as conn:
+                await conn.execute("UPDATE user_agreement SET agreement_status = $1 WHERE userid = $2", form.agreement_status, form.userid)
+        except Exception as e:
+            logger.error(f'[update_agreement repo error]: {e}')

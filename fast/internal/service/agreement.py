@@ -18,3 +18,10 @@ class AgreementService:
             return await self.psql_repo.update_agreement_mesid(form)
         except Exception as e:
             logger.error(f'[update_agreement_mesid service error]: {e}')
+
+    async def update_agreement(self, form: model.UpdateAgreement):
+        try:
+            await self.psql_repo.update_agreement(form)
+            return {'status': 'ok'}
+        except Exception as e:
+            logger.error(f'[update_agreement service error]: {e}')

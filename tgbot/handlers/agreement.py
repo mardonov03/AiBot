@@ -2,8 +2,6 @@ from aiogram.types import CallbackQuery
 from tgbot.core.logging import logger
 import aiohttp
 from tgbot.core.config import settings
-from tgbot.keyboards import config as keyboards
-
 
 async def agreement_selected(callback_query: CallbackQuery):
     userid = callback_query.from_user.id

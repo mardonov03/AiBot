@@ -1,5 +1,6 @@
 from fast.internal.service.user import UserService
 from fast.internal.service.agreement import AgreementService
+from fast.internal.service.ai import AiService
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Request
 
@@ -10,3 +11,6 @@ def get_user_service(request: Request) -> UserService:
 
 def get_agreement_service(request: Request) -> AgreementService:
     return AgreementService(request.app.state.pool)
+
+def get_ai_service(request: Request) -> AiService:
+    return AiService(request.app.state.pool)

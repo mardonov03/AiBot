@@ -66,5 +66,16 @@ async def init_db(pool):
                     FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
                 );
             """)
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS session_messages (
+                    userid BIGINT NOT NULL,
+                    sessionid INTEGER NOT NULL,
+                    role TEXT NOT NULL, -- 'user' или 'assistant'
+                    message TEXT NOT NULL,
+                    added_time TIMESTAMP DEFAULT now(),
+                    FOREIGN KEY (userid, sessionid) REFERENCES user_sessions(userid, sessionid) ON DELETE CASCADE
+                );
+            """)
+
     except Exception as e:
         logger.error(f'init_db error: {e}')

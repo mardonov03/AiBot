@@ -9,8 +9,8 @@ async def agreement_selected(callback_query: CallbackQuery):
     userid = callback_query.from_user.id
     selected = callback_query.data.replace('agreement_', '')
     try:
-        if selected == 'yes':
-            async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession() as session:
+            if selected == 'yes':
                 res = await session.post(f'{settings.API}/agreement/update', json={'userid': userid, 'agreement_status': True})
                 response_data = await res.json()
                 if response_data['status'] == 'ok':
@@ -18,9 +18,12 @@ async def agreement_selected(callback_query: CallbackQuery):
                     await callback_query.message.chat.pin_message(callback_query.message.message_id)
                 else:
                     await callback_query.answer("❌ Ошибка: доступ не разрешён. Повторите попытку.",show_alert=True)
-        elif selected == 'no':
-            await callback_query.message.edit_text("<b>❌ Вы отклонили пользовательское соглашение.</b>\n\nК сожалению, вы не можете использовать бота без согласия.",parse_mode="HTML")
-            await callback_query.message.chat.pin_message(callback_query.message.message_id)
+            elif selected == 'no':
+                res = await session.post(f'{settings.API}/agreement/update', json={'userid': userid, 'agreement_status': False})
+                response_data = await res.json()
+                if response_data['status'] == 'ok':
+                    await callback_query.message.edit_text("<b>❌ Вы отклонили пользовательское соглашение.</b>\n\nК сожалению, вы не можете использовать бота без согласия.",parse_mode="HTML")
+                    await callback_query.message.chat.pin_message(callback_query.message.message_id)
     except Exception as e:
         logger.error(f'"agreement_selected error": {e}')
         await callback_query.message.edit_text("Произошла ошибка. Попробуйте позже.", show_alert=True)

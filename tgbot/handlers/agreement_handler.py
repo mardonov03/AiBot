@@ -12,7 +12,7 @@ async def agreement_selected(callback_query: CallbackQuery):
                 res = await session.post(f'{settings.API}/agreement/update', json={'userid': userid, 'agreement_status': True})
                 response_data = await res.json()
                 if response_data['status'] == 'ok':
-                    await callback_query.message.edit_text("<b>✅ Вы успешно подтвердили соглашение</b>.\n\n🇷🇺 Ru: <b><a href='https://telegra.ph/Polzovatelskoe-Soglashenie-PurifyAi-04-13-2'>Пользовательское Соглашение</a> </b>.\n\n🇺🇸 En: <b><a href='https://telegra.ph/User-Agreement-PurifyAi-04-13'>User Agreement</a> </b>.\n\n🇺🇿 Uz: <b><a href='https://telegra.ph/Foydalanuvchi-Shartnomasi-PurifyAi-04-13'>Foydalanuvchi Shartnomasi</a> </b>.\n\nСпасибо за согласие!",parse_mode="HTML", disable_web_page_preview=True)
+                    await callback_query.message.edit_text(f"<b>✅ Вы успешно подтвердили соглашение</b>.\n\n🇷🇺 Ru: <b><a href='{settings.AGREEMENT_URL_RU}'>Пользовательское Соглашение</a> </b>.\n\n🇺🇸 En: <b><a href='{settings.AGREEMENT_URL_EN}'>User Agreement</a> </b>.\n\n🇺🇿 Uz: <b><a href='{settings.AGREEMENT_URL_UZ}'>Foydalanuvchi Shartnomasi</a> </b>.\n\nСпасибо за согласие!",parse_mode="HTML", disable_web_page_preview=True)
                     await callback_query.message.chat.pin_message(callback_query.message.message_id)
                 else:
                     await callback_query.answer("❌ Ошибка: доступ не разрешён. Повторите попытку.",show_alert=True)

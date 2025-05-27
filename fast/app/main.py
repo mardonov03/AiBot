@@ -3,8 +3,11 @@ from fast.internal.repository.postgresql import db
 from fast.internal.core.logging import logger
 from fast.internal.api import user, ai, agreement
 from fast.internal.repository.redis import db as redis_db
+from fast.internal.middleware.agreement_check import AgreementMiddleware
 
 app = FastAPI()
+
+app.add_middleware(AgreementMiddleware)
 
 app.include_router(user.router, prefix="/users", tags=["Users"])
 app.include_router(agreement.router, prefix="/agreement", tags=["User Agreement"])

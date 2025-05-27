@@ -10,10 +10,16 @@ async def handle_start(message: Message):
         username = message.from_user.username
         full_name = message.from_user.full_name
 
-        async with aiohttp.ClientSession() as session:
-            resp = await session.post(f'{settings.API}/users/init-or-deny-access', json={'userid': userid, 'username': username, 'full_name': full_name})
-            data = await resp.json()
+        headers = {
+            "X-User-ID": str(userid),
+            "X-Username": username if username else "",
+            "X-Full-Name": full_name
+        }
 
+        async with aiohttp.ClientSession() as session:
+            resp = await session.get(f'{settings.API}/users/get-user-data', params={'userid': userid}, headers=headers)
+
+            data = await resp.json()
             if data.get('status') == 'need_agreement':
                 try:
                     resp = await session.get(f'{settings.API}/agreement/get-mesid', params={'userid': userid})
@@ -27,8 +33,7 @@ async def handle_start(message: Message):
                 await session.post(f'{settings.API}/agreement/update-mesid', json={'userid': userid, 'mesid': mes.message_id})
                 return
 
-            if data.get('status') == 'ok':
-                await message.answer('ok')
+            await message.answer('ok')
 
     except Exception as e:
         logger.error(f'[handle_start error]: {e}')

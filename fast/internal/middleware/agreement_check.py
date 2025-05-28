@@ -33,8 +33,8 @@ class AgreementMiddleware(BaseHTTPMiddleware):
             user_service: UserService = get_user_service(request)
 
             result = await user_service.init_or_deny(user)
-            if result.get("status") == "need_agreement":
-                return JSONResponse(status_code=403, content={"status": "need_agreement"})
+            if result.get("agreement_status") == "need_agreement":
+                return JSONResponse(status_code=403, content={"agreement_status": "need_agreement"})
 
         except Exception as e:
             return JSONResponse(status_code=500, content={"status": "error", "detail": str(e)})

@@ -20,7 +20,7 @@ async def handle_start(message: Message):
             resp = await session.get(f'{settings.API}/users/get-user-data', params={'userid': userid}, headers=headers)
 
             data = await resp.json()
-            if data.get('status') == 'need_agreement':
+            if data.get('agreement_status') == 'need_agreement':
                 try:
                     resp = await session.get(f'{settings.API}/agreement/get-mesid', params={'userid': userid})
                     data = await resp.json()

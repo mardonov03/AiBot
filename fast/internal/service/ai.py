@@ -76,12 +76,10 @@ class AiService:
 
             response_content = await run_in_threadpool(sync_call)
             response_json = json.loads(response_content)
-            print(request_message_json)
             if not session:
                 sessionid = await self.psql_repo.create_new_session(form.userid, response_json["title"])
-                print(sessionid)
             await self.psql_repo.save_message(sessionid, form.userid, "user", form.context)
-            await self.psql_repo.save_message(sessionid, form.userid, "assistant", response_content['context'])
+            await self.psql_repo.save_message(sessionid, form.userid, "assistant", response_json['context'])
 
             return {"status": "ok", "response": response_content}
 

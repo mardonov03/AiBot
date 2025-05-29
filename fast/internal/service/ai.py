@@ -17,7 +17,7 @@ class AiService:
             session = await self.psql_repo.get_last_session(userid)
             if session:
                 added_time = session['added_time']
-                if datetime.utcnow() - added_time > timedelta(minutes=15):
+                if datetime.now() - added_time > timedelta(minutes=5):
                     return None
             return session['sessionid']
         except Exception as e:

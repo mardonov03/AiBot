@@ -19,11 +19,12 @@ async def request_to_ai(message: Message):
                 "X-Username": username if username else "",
                 "X-Full-Name": full_name
             }
+            thinking_msg = await message.answer("Думаю...")
 
             resp = await session.post(f'{settings.API}/ai/' , json={"userid": userid, "context": message.text}, headers=headers)
             data = await resp.json()
             if data['status'] == "ok":
-                await message.answer(data['response'])
+                await thinking_msg.edit_text(data['response'])
             elif data['status'] == "need_agreement":
                 await agreement_handler.need_agreement_handler(userid, message)
                 return

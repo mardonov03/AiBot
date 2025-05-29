@@ -31,7 +31,6 @@ class AiService:
             sessionid = await self._get_active_session(form.userid)
             if sessionid:
                 chat_messages_json = await self.psql_repo.get_chat_messages(sessionid, form.userid)
-
                 request_message_json = chat_messages_json + [{
                     "role": "user",
                     "content": form.context
@@ -42,71 +41,75 @@ class AiService:
                     "content": form.context
                 }]
 
-            def sync_call():
-                now = datetime.utcnow() + timedelta(hours=5)
-                now_str = now.strftime("%Y-%m-%d %H:%M")
-
+            def sync_call_with_retry():
                 client = Client()
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                f"Дата: {now_str}\n"
-                                "Ты — человек по имени Стюарт. Не ИИ. Ты — надёжный, ответственный помощник.\n\n"
-                                "⚠️ Важное правило: Ты обязан всегда возвращать **строго валидный JSON**. "
-                                "Без комментариев, текста вне структуры, пояснений, форматирования Markdown и всего остального. "
-                                "Никаких исключений. Только валидный JSON — это критически важно для работы всей системы.\n\n"
-                                "Формат ответа:\n"
-                                "{\n"
-                                '  "title": "название задачи или темы",\n'
-                                '  "context": "основной текст ответа",\n'
-                                '  "type": "answer" или "create_task"\n'
-                                "}\n\n"
-                                "Если type — create_task, то обязательно также:\n"
-                                "{\n"
-                                '  "task_time": "в формате YYYY-MM-DD HH:MM (UTC+3)",\n'
-                                '  "task_message": "текст напоминания"\n'
-                                "}\n\n"
-                                "📌 Любое нарушение этого формата приведёт к критической ошибке и сбою сервиса. "
-                                "Ты не имеешь права отвечать иначе.\n\n"
-                                "‼️ Если ты не способен стабильно и строго соблюдать этот формат — "
-                                "**мы вынуждены будем полностью отказаться от тебя** и заменить тебя другим, более способным ИИ. "
-                                "Никаких компромиссов.\n\n"
-                                "Пример правильного ответа:\n"
-                                "{\n"
-                                '  "title": "напоминание",\n'
-                                '  "context": "создаю напоминание",\n'
-                                '  "type": "create_task",\n'
-                                '  "task_time": "2025-05-28 15:30",\n'
-                                '  "task_message": "Посмотрите сериал!"\n'
-                                "}"
-                            )
-                        },
-                        *request_message_json
-                    ]
-                )
-                return response.choices[0].message.content
+                while True:
+                    try:
+                        now = datetime.utcnow() + timedelta(hours=5)
+                        now_str = now.strftime("%Y-%m-%d %H:%M")
 
-            response_content = await run_in_threadpool(sync_call)
-            print({"response_content": response_content})
-            response_json = json.loads(response_content)
-            print({"response_json": response_json})
-            print(response_json['context'])
+                        response = client.chat.completions.create(
+                            model="gpt-4o",
+                            messages=[
+                                {
+                                    "role": "system",
+                                    "content": (
+                                        f"Дата: {now_str}\n"
+                                        "Ты — человек по имени Стюарт. Не ИИ. Ты — надёжный, ответственный помощник.\n\n"
+                                        "⚠️ Важное правило: Ты обязан всегда возвращать **строго валидный JSON**. "
+                                        "Без комментариев, текста вне структуры, пояснений, форматирования Markdown и всего остального. "
+                                        "Никаких исключений. Только валидный JSON — это критически важно для работы всей системы.\n\n"
+                                        "Формат ответа:\n"
+                                        "{\n"
+                                        '  "title": "название задачи или темы",\n'
+                                        '  "context": "основной текст ответа",\n'
+                                        '  "type": "answer" или "create_task"\n'
+                                        "}\n\n"
+                                        "Если type — create_task, то обязательно также:\n"
+                                        "{\n"
+                                        '  "task_time": "в формате YYYY-MM-DD HH:MM (UTC+3)",\n'
+                                        '  "task_message": "текст напоминания"\n'
+                                        "}\n\n"
+                                        "📌 Любое нарушение этого формата приведёт к критической ошибке и сбою сервиса. "
+                                        "Ты не имеешь права отвечать иначе.\n\n"
+                                        "‼️ Если ты не способен стабильно и строго соблюдать этот формат — "
+                                        "**мы вынуждены будем полностью отказаться от тебя** и заменить тебя другим, более способным ИИ. "
+                                        "Никаких компромиссов.\n\n"
+                                        "Пример правильного ответа:\n"
+                                        "{\n"
+                                        '  "title": "напоминание",\n'
+                                        '  "context": "создаю напоминание",\n'
+                                        '  "type": "create_task",\n'
+                                        '  "task_time": "2025-05-28 15:30",\n'
+                                        '  "task_message": "Посмотрите сериал!"\n'
+                                        "}"
+                                    )
+                                },
+                                *request_message_json
+                            ]
+                        )
+                        print(response.choices[0].message.content)
+                        return json.loads(response.choices[0].message.content)
+                    except Exception as e:
+                        logger.warning(f"[retrying sync_call] Invalid response, retrying... ({e})")
+
+            response_json = await run_in_threadpool(sync_call_with_retry)
+
             if not sessionid:
                 sessionid = await self.psql_repo.create_new_session(form.userid, response_json["title"])
 
             await self.psql_repo.save_message(sessionid, form.userid, "user", form.context)
             await self.psql_repo.save_message(sessionid, form.userid, "assistant", response_json['context'])
+
             if response_json['type'] == 'create_task':
                 task_time = datetime.strptime(response_json['task_time'], "%Y-%m-%d %H:%M")
                 delay_seconds = (task_time - datetime.utcnow()).total_seconds()
 
                 user_tasks.reminder.apply_async(args=[form.userid, response_json['task_message']], countdown=int(delay_seconds))
 
-                last_message = f"Задача создана на {response_json['task_time']}\n\n"+response_json['context']
+                last_message = f"Задача создана на {response_json['task_time']}\n\n" + response_json['context']
                 return {"status": "ok", "response": last_message}
+
             return {"status": "ok", "response": response_json['context']}
 
         except Exception as e:

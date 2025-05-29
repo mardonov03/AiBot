@@ -11,7 +11,6 @@ async def update_agreement_mesid(form: model.UpdateAgreementMesid, service: Agre
 
 @router.post("/update")
 async def update_agreement(form: model.UpdateAgreement, service: AgreementService = Depends(dependencies.get_agreement_service)):
-    print(form.agreement_status, form.userid)
     return await service.update_agreement(form)
 
 @router.get("/get-mesid")

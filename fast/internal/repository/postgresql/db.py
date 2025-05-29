@@ -42,7 +42,7 @@ async def init_db(pool):
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS user_agreement (
                     userid BIGINT PRIMARY KEY REFERENCES users(userid) ON DELETE CASCADE,
-                    agreement_status BOOLEAN NOT NULL DEFAULT FALSE,
+                    status BOOLEAN NOT NULL DEFAULT FALSE,
                     mesid BIGINT,
                     update_time TIMESTAMP NOT NULL DEFAULT NOW()
                 );
@@ -57,10 +57,8 @@ async def init_db(pool):
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS user_sessions (
                     userid BIGINT NOT NULL,
-                    sessionid INTEGER NOT NULL,
+                    sessionid BIGSERIAL NOT NULL,
                     title TEXT NOT NULL,
-                    context TEXT NOT NULL,
-                    type session_types NOT NULL DEFAULT 'answer',
                     added_time TIMESTAMP DEFAULT now(),
                     PRIMARY KEY (userid, sessionid),
                     FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
@@ -69,8 +67,9 @@ async def init_db(pool):
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS session_messages (
                     userid BIGINT NOT NULL,
-                    sessionid INTEGER NOT NULL,
+                    sessionid BIGSERIAL NOT NULL,
                     role TEXT NOT NULL, -- 'user' или 'assistant'
+                    type session_types NOT NULL DEFAULT 'answer',
                     message TEXT NOT NULL,
                     added_time TIMESTAMP DEFAULT now(),
                     FOREIGN KEY (userid, sessionid) REFERENCES user_sessions(userid, sessionid) ON DELETE CASCADE

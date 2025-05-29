@@ -15,4 +15,4 @@ class InfoUser(BaseModel):
     full_name: str
     username: str | None = None
     added_time: datetime
-    agreement_status: bool
+    status: bool

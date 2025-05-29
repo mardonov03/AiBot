@@ -15,16 +15,16 @@ class UserService:
 
             if not existing:
                 await self.psql_repo.add_user(user)
-                return {"agreement_status": "need_agreement"}
+                return {"status": "need_agreement"}
 
-            if not existing.agreement_status:
-                return {"agreement_status": "need_agreement"}
+            if not existing.status:
+                return {"status": "need_agreement"}
 
-            return {"agreement_status": "ok"}
+            return {"status": "ok"}
 
         except Exception as e:
             logger.error(f'[init_or_deny error]: {e}')
-            return {"agreement_status": "error"}
+            return {"status": "error"}
 
     async def get_user_data(self, userid: int):
         try:

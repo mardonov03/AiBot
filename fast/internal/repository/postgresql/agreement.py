@@ -26,6 +26,6 @@ class AgreementRepository:
     async def update_agreement(self, form: model.UpdateAgreement):
         try:
             async with self.pool.acquire() as conn:
-                await conn.execute("UPDATE user_agreement SET agreement_status = $1 WHERE userid = $2", form.agreement_status, form.userid)
+                await conn.execute("UPDATE user_agreement SET status = $1 WHERE userid = $2", form.status, form.userid)
         except Exception as e:
             logger.error(f'[update_agreement repo error]: {e}')

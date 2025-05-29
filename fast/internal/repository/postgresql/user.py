@@ -17,7 +17,7 @@ class UserRepository:
     async def get_user_data(self, userid: int) -> model.InfoUser | None:
         try:
             async with self.pool.acquire() as conn:
-                row = await conn.fetchrow("SELECT u.userid, u.full_name, u.username, u.added_time, a.agreement_status FROM users AS u JOIN user_agreement AS a ON u.userid = a.userid WHERE u.userid = $1", userid)
+                row = await conn.fetchrow("SELECT u.userid, u.full_name, u.username, u.added_time, a.status FROM users AS u JOIN user_agreement AS a ON u.userid = a.userid WHERE u.userid = $1", userid)
                 if row is None:
                     return None
                 return model.InfoUser(**dict(row))

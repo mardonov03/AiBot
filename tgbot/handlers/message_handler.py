@@ -2,8 +2,12 @@ from aiogram.types import Message
 import aiohttp
 from tgbot.core.logging import logger
 from tgbot.core.config import settings
+from tgbot.handlers import agreement_handler
+
 
 async def request_to_ai(message: Message):
+    if message.from_user.id == message.bot.id:
+        return
     userid = message.from_user.id
     username = message.from_user.username
     full_name = message.from_user.full_name
@@ -16,11 +20,12 @@ async def request_to_ai(message: Message):
                 "X-Full-Name": full_name
             }
 
-            resp = await session.post(f'{settings.API}/ai' , json={"userid": userid, "context": message.text}, headers=headers)
+            resp = await session.post(f'{settings.API}/ai/' , json={"userid": userid, "context": message.text}, headers=headers)
             data = await resp.json()
             if data['status'] == "ok":
                 await message.answer(data['response'])
             elif data['status'] == "need_agreement":
-                pass
+                await agreement_handler.need_agreement_handler(userid, message)
+                return
     except Exception as e:
         logger.error(f'[request_to_ai error]: {e}')

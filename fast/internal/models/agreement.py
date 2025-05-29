@@ -6,4 +6,4 @@ class UpdateAgreementMesid(BaseModel):
 
 class UpdateAgreement(BaseModel):
     userid: int
-    agreement_status: bool
+    status: bool

@@ -1,14 +1,10 @@
 import asyncio
 from tgbot.core.logging import logger
-import orjson
-from aiogram import Bot, Dispatcher
-from aiogram.client.bot import DefaultBotProperties
-from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.enums import ParseMode
+from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from tgbot.core.config import settings
 from tgbot import handlers
-from tgbot.core import config
+from tgbot.bot_instance import bot  # ✅ уже готовый singleton-бот
 
 async def setup_handlers(dp: Dispatcher) -> None:
     dp.include_router(handlers.setup())
@@ -22,27 +18,17 @@ async def setup_aiogram(dp: Dispatcher) -> None:
     await setup_handlers(dp)
     await setup_middlewares(dp)
 
-
-async def aiogram_on_startup(dispatcher: Dispatcher, bot: Bot) -> None:
+async def aiogram_on_startup(dispatcher: Dispatcher) -> None:
     await bot.delete_webhook(drop_pending_updates=True)
     logger.info("Bot started")
 
-
-async def aiogram_on_shutdown(dispatcher: Dispatcher, bot: Bot) -> None:
+async def aiogram_on_shutdown(dispatcher: Dispatcher) -> None:
     await bot.session.close()
     await dispatcher.storage.close()
     logger.info("Bot shutdown")
 
 
 async def main():
-    session = AiohttpSession(json_loads=orjson.loads)
-
-    bot = Bot(
-        token=settings.BOT_TOKEN,
-        session=session,
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
-    )
-
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 

@@ -3,7 +3,7 @@ import aiohttp
 from tgbot.core.logging import logger
 from tgbot.core.config import settings
 from tgbot.handlers import agreement_handler
-
+from tgbot.bot_instance import bot
 
 async def request_to_ai(message: Message):
     if message.from_user.id == message.bot.id:
@@ -29,3 +29,10 @@ async def request_to_ai(message: Message):
                 return
     except Exception as e:
         logger.error(f'[request_to_ai error]: {e}')
+
+
+async def send_message_handler(userid, message_text):
+    try:
+        await bot.send_message(userid, message_text)
+    except Exception as e:
+        logger.error(f'[send_message_handler error]: {e}')

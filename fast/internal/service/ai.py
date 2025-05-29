@@ -5,7 +5,7 @@ from starlette.concurrency import run_in_threadpool
 from datetime import datetime, timedelta
 from fast.internal.core.logging import logger
 import json
-from fast.internal.tasks import user as user_tasks
+from tasks import user as user_tasks
 
 
 class AiService:

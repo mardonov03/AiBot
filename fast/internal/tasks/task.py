@@ -7,5 +7,5 @@ celery = Celery(
     backend=f"redis://{config.settings.REDIS_HOST}:{config.settings.REDIS_PORT}"
 )
 
-celery.conf.timezone = "UTC"
+celery.conf.timezone = "Asia/Tashkent"
 celery.conf.task_routes = {"tasks.*": {"queue": "default"}}

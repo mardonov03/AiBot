@@ -5,6 +5,8 @@ from starlette.concurrency import run_in_threadpool
 from datetime import datetime, timedelta
 from fast.internal.core.logging import logger
 import json
+from fast.internal.tasks import user as user_tasks
+
 
 class AiService:
     def __init__(self, pool):
@@ -98,7 +100,13 @@ class AiService:
             await self.psql_repo.save_message(sessionid, form.userid, "user", form.context)
             await self.psql_repo.save_message(sessionid, form.userid, "assistant", response_json['context'])
             if response_json['type'] == 'create_task':
-                print("create_task")
+                task_time = datetime.strptime(response_json['task_time'], "%Y-%m-%d %H:%M")
+                delay_seconds = (task_time - datetime.utcnow()).total_seconds()
+
+                user_tasks.reminder.apply_async(args=[response_json['task_message']], countdown=int(delay_seconds))
+
+                last_message = f"Задача создана на {response_json['task_time']}\n\n"+response_json['context']
+                return {"status": "ok", "response": last_message}
             return {"status": "ok", "response": response_json['context']}
 
         except Exception as e:

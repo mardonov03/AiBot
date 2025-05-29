@@ -6,9 +6,8 @@ class Settings(BaseSettings):
     AGREEMENT_URL_RU: str
     AGREEMENT_URL_EN: str
     AGREEMENT_URL_UZ: str
-    PROMPT: str
 
     class Config:
-        env_file = ".env"
+        env_file = "tgbot/.env"
 
 settings = Settings()

@@ -10,8 +10,16 @@ class AiService:
     def __init__(self, pool):
         self.psql_repo = AiRepository(pool)
 
-    async def _get_active_session(self, userid: int) -> int:
-        return await self.psql_repo.get_last_session(userid)
+    async def _get_active_session(self, userid: int) -> int | None:
+        try:
+            session = await self.psql_repo.get_last_session(userid)
+            if session:
+                added_time = datetime.fromtimestamp(session['added_time'])
+                if datetime.utcnow() - added_time > timedelta(minutes=15):
+                    return None
+            return session['sessionid']
+        except Exception as e:
+            logger.error(f'[_get_active_session error: {e}]')
 
     async def get_chat_messages(self, sessionid: int, userid: int):
         return await self.psql_repo.get_chat_messages(sessionid, userid)

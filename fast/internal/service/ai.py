@@ -103,7 +103,7 @@ class AiService:
                 task_time = datetime.strptime(response_json['task_time'], "%Y-%m-%d %H:%M")
                 delay_seconds = (task_time - datetime.utcnow()).total_seconds()
 
-                user_tasks.reminder.apply_async(args=[response_json['task_message']], countdown=int(delay_seconds))
+                user_tasks.reminder.apply_async(args=[form.userid, response_json['task_message']], countdown=int(delay_seconds))
 
                 last_message = f"Задача создана на {response_json['task_time']}\n\n"+response_json['context']
                 return {"status": "ok", "response": last_message}

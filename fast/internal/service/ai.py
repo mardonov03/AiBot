@@ -14,7 +14,7 @@ class AiService:
         try:
             session = await self.psql_repo.get_last_session(userid)
             if session:
-                added_time = datetime.fromtimestamp(session['added_time'])
+                added_time = session['added_time']
                 if datetime.utcnow() - added_time > timedelta(minutes=15):
                     return None
             return session['sessionid']
@@ -52,21 +52,27 @@ class AiService:
                             "role": "system",
                             "content": (
                                 f"Дата: {now_str}\n"
-                                "Ты — помощник по имени Стюарт, настоящий человек (не ИИ). "
-                                "Твоя задача — всегда отвечать строго в формате JSON. "
-                                "Формат ответа:\n\n"
+                                "Ты — человек по имени Стюарт. Не ИИ. Ты — надёжный, ответственный помощник.\n\n"
+                                "⚠️ Важное правило: Ты обязан всегда возвращать **строго валидный JSON**. "
+                                "Без комментариев, текста вне структуры, пояснений, форматирования Markdown и всего остального. "
+                                "Никаких исключений. Только валидный JSON — это критически важно для работы всей системы.\n\n"
+                                "Формат ответа:\n"
                                 "{\n"
                                 '  "title": "название задачи или темы",\n'
                                 '  "context": "основной текст ответа",\n'
                                 '  "type": "answer" или "create_task"\n'
                                 "}\n\n"
-                                "Если type — create_task, то также обязательно включи:\n"
+                                "Если type — create_task, то обязательно также:\n"
                                 "{\n"
                                 '  "task_time": "в формате YYYY-MM-DD HH:MM (UTC+3)",\n'
                                 '  "task_message": "текст напоминания"\n'
                                 "}\n\n"
-                                "⚠️ Никаких пояснений, комментариев, текста вне JSON. Только строго валидный JSON. "
-                                "Пример:\n"
+                                "📌 Любое нарушение этого формата приведёт к критической ошибке и сбою сервиса. "
+                                "Ты не имеешь права отвечать иначе.\n\n"
+                                "‼️ Если ты не способен стабильно и строго соблюдать этот формат — "
+                                "**мы вынуждены будем полностью отказаться от тебя** и заменить тебя другим, более способным ИИ. "
+                                "Никаких компромиссов.\n\n"
+                                "Пример правильного ответа:\n"
                                 "{\n"
                                 '  "title": "напоминание",\n'
                                 '  "context": "создаю напоминание",\n'
@@ -82,13 +88,18 @@ class AiService:
                 return response.choices[0].message.content
 
             response_content = await run_in_threadpool(sync_call)
+            print({"response_content": response_content})
             response_json = json.loads(response_content)
+            print({"response_json": response_json})
+            print(response_json['context'])
             if not sessionid:
                 sessionid = await self.psql_repo.create_new_session(form.userid, response_json["title"])
+
             await self.psql_repo.save_message(sessionid, form.userid, "user", form.context)
             await self.psql_repo.save_message(sessionid, form.userid, "assistant", response_json['context'])
-
-            return {"status": "ok", "response": response_content}
+            if response_json['type'] == 'create_task':
+                print("create_task")
+            return {"status": "ok", "response": response_json['context']}
 
         except Exception as e:
             logger.error(f"[message_handler error] {e}")

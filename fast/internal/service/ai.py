@@ -26,9 +26,8 @@ class AiService:
 
     async def message_handler(self, form: model.RequestModel):
         try:
-            session = await self._get_active_session(form.userid)
-            if session:
-                sessionid = session['sessionid']
+            sessionid = await self._get_active_session(form.userid)
+            if sessionid:
                 chat_messages_json = await self.psql_repo.get_chat_messages(sessionid, form.userid)
 
                 request_message_json = chat_messages_json + [{

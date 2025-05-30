@@ -9,3 +9,6 @@ fastapi-mail==1.4.1
 aiosmtplib==2.0.2
 celery==5.5.2
 redis==5.1.0
+g4f
+aiogram
+orjson
